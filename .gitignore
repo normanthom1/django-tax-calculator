@@ -154,6 +154,12 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
+# Ignore all attachment files (e.g., PNG, JPG, PDF) in the media or attachments directory
+*.png
+*.jpg
+*.jpeg
+*.pdf
+
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
 #  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
