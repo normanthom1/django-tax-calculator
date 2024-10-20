@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+    <h1>Earning Details</h1>
+    <table class="table table-bordered">
+        <tbody>
+            <tr>
+                <td><strong>Reference</strong></td>
+                <td>{{ earning.reference }}</td>
+            </tr>
+            <tr>
+                <td><strong>Description</strong></td>
+                <td>{{ earning.description }}</td>
+            </tr>
+            <tr>
+                <td><strong>Amount</strong></td>
+                <td>{{ earning.amount|floatformat:2 }} NZD</td>
+            </tr>
+            <tr>
+                <td><strong>Date</strong></td>
+                <td>{{ earning.date }}</td>
+            </tr>
+            <tr>
+                <td><strong>Reference</strong></td>
+                <td>{{ earning.reference }}</td>
+            </tr>
+            <tr>
+                <td><strong>Attachment</strong></td>
+                <td>
+                    {% if earning.attachment %}
+                        <a href="{{ earning.attachment.url }}" target="_blank">View Attachment</a>
+                    {% else %}
+                        No attachment
+                    {% endif %}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <a href="{% url 'dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+</div>
+{% endblock %}

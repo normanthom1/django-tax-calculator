@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+    <h1>Dashboard</h1>
+    <br>
+    <hr class="dotted">
+    <br>
+    <div class="container">
+        <div class="row">
+          <div class="col-9">
+            <h3>Tax Summary</h3>
+          </div>
+          <div class="col-3">
+            <!-- <a href="{% url 'update_personal_details' %}" class="btn btn-warning btn-md btn-block">Update</a> -->
+          </div>
+        </div>
+    </div>
+    <table class="table table-bordered">
+        <tbody>
+            <tr>
+                <td><strong>Current Financial Year</strong></td>
+                <td>{{ financial_year.year }}</td>
+            </tr>
+            <tr>
+                <td><strong>Total Earnings</strong></td>
+                <td>{{ total_earnings|floatformat:2 }} NZD</td>
+            </tr>
+            <tr>
+                <td><strong>Total Expenses</strong></td>
+                <td>{{ total_expenses|floatformat:2 }} NZD</td>
+            </tr>
+            <tr>
+                <td><strong>Tax Owed for Permanent Income</strong></td>
+                <td>{{ tax_owed_permanent_income|floatformat:2 }} NZD</td>
+            </tr>
+            <tr>
+                <td><strong>Tax Owed for Earnings</strong></td>
+                <td>{{ tax_owed_earnings|floatformat:2 }} NZD</td>
+            </tr>
+        </tbody>
+    </table>
+    <br>
+    <hr class="dotted">
+    <br>
+    <div class="container">
+        <div class="row">
+          <div class="col-9">
+            <h3>Personal Details</h3>
+          </div>
+          <div class="col-3">
+            <a href="{% url 'update_personal_details' %}" class="btn btn-warning btn-md btn-block">Update</a>
+          </div>
+        </div>
+    </div>
+    <table class="table table-bordered">
+        <!-- <thead>
+            <tr>
+                <th colspan="2" class="text-center">Personal Details</th>
+            </tr>
+        </thead> -->
+        <tbody>
+            <tr>
+                <td><strong>Name</strong></td>
+                <td>{{ personal_details.first_name }} {{ personal_details.last_name }}</td>
+            </tr>
+            <tr>
+                <td><strong>Email</strong></td>
+                <td>{{ personal_details.email }}</td>
+            </tr>
+            <tr>
+                <td><strong>GST Registered</strong></td>
+                <td>{{ personal_details.gst_registered|yesno:"Yes,No" }}</td>
+            </tr>
+            <tr>
+                <td><strong>Permanent Income</strong></td>
+                <td>{{ personal_details.permanent_income|floatformat:2 }} NZD</td>
+            </tr>
+            <tr>
+                <td><strong>Phone Number</strong></td>
+                <td>{{ personal_details.phone_number }}</td>
+            </tr>
+            <tr>
+                <td><strong>Address</strong></td>
+                <td>{{ personal_details.address }}</td>
+            </tr>
+        </tbody>
+    </table>
+    <br>
+    <hr class="dotted">
+    <br>
+
+    <!-- <h3>Earnings</h3> -->
+    <div class="container">
+        <div class="row">
+          <div class="col-9">
+            <h3>Earnings</h3>
+          </div>
+          <div class="col-3">
+            <a href="{% url 'add_earning' %}" class="btn btn-success btn-md btn-block">Add</a>
+          </div>
+        </div>
+    </div>
+    <table class="table">
+        <thead>
+            <tr><th>Description</th><th>Amount</th><th>Date</th><th></th></tr>
+        </thead>
+        <tbody>
+        {% for earning in earnings %}
+            <tr>
+                <td><a href="{% url 'earning_detail' earning.pk %}">{{ earning.reference }}</a></td>
+                <td>{{ earning.amount }}</td>
+                <td>{{ earning.date }}</td>
+                <td>
+                    <a href="{% url 'earning_update' earning.pk %}" class="btn btn-warning">Update</a>
+                    <a href="{% url 'delete_earning' earning.pk %}" class="btn btn-danger">Delete</a>
+                </td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="4">No earnings yet.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <br>
+    <hr class="dotted">
+    <br>
+    <div class="container">
+        <div class="row">
+          <div class="col-9">
+            <h3>Expenses</h3>
+          </div>
+          <div class="col-3">
+            <a href="{% url 'add_expense' %}" class="btn btn-success btn-md btn-block">Add</a>
+          </div>
+        </div>
+    </div>
+    <table class="table">
+        <thead>
+            <tr><th>Description</th><th>Amount</th><th>Date</th><th></th></tr>
+        </thead>
+        <tbody>
+        {% for expense in expenses %}
+            <tr>
+                <td><a href="{% url 'expense_detail' expense.pk %}">{{ expense.reference }}</a></td>
+                <td>{{ expense.amount }}</td>
+                <td>{{ expense.date }}</td>
+                <td>
+                    <a href="{% url 'expense_update' expense.pk %}" class="btn btn-warning">Update</a>
+                    <a href="{% url 'delete_expense' expense.pk %}" class="btn btn-danger">Delete</a>
+                </td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="4">No expenses yet.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

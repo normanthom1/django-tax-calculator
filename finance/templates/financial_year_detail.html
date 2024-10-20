@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+    <h1>Financial Year {{ financial_year.year }} - {{ financial_year.year + 1 }}</h1>
+
+    <h3>Total Earnings: {{ total_earnings|floatformat:2 }} NZD</h3>
+    <h3>Total Expenses: {{ total_expenses|floatformat:2 }} NZD</h3>
+    <h3>Tax Owed: {{ tax_owed|floatformat:2 }} NZD</h3>
+
+    <h3>Earnings</h3>
+    <table class="table">
+        <thead>
+            <tr><th>Description</th><th>Amount</th><th>Date</th></tr>
+        </thead>
+        <tbody>
+        {% for earning in earnings %}
+            <tr>
+                <td>{{ earning.description }}</td>
+                <td>{{ earning.amount }}</td>
+                <td>{{ earning.date }}</td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="3">No earnings for this year.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>Expenses</h3>
+    <table class="table">
+        <thead>
+            <tr><th>Description</th><th>Amount</th><th>Date</th></tr>
+        </thead>
+        <tbody>
+        {% for expense in expenses %}
+            <tr>
+                <td>{{ expense.description }}</td>
+                <td>{{ expense.amount }}</td>
+                <td>{{ expense.date }}</td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="3">No expenses for this year.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

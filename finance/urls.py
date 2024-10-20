@@ -1,0 +1,16 @@
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('', views.dashboard, name='dashboard'),
+    path('add-earning/', views.add_earning, name='add_earning'),
+    path('add-expense/', views.add_expense, name='add_expense'),
+    path('financial-year/<int:pk>/', views.financial_year_detail, name='financial_year_detail'),
+    path('delete-earning/<int:pk>/', views.delete_earning, name='delete_earning'),
+    path('delete-expense/<int:pk>/', views.delete_expense, name='delete_expense'),
+    path('update-personal-details/', views.update_personal_details, name='update_personal_details'),
+    path('earning/<int:pk>/', views.EarningDetailView.as_view(), name='earning_detail'),
+    path('expense/<int:pk>/', views.ExpenseDetailView.as_view(), name='expense_detail'),
+    path('earning/update/<int:pk>/', views.EarningUpdateView.as_view(), name='earning_update'),
+    path('expense/update/<int:pk>/', views.ExpenseUpdateView.as_view(), name='expense_update'),
+]
