@@ -43,32 +43,6 @@ def dashboard(request):
 
     return render(request, 'dashboard.html', context)
 
-# Add earning
-def add_earning(request):
-    if request.method == 'POST':
-        form = EarningForm(request.POST, request.FILES)
-        if form.is_valid():
-            earning = form.save(commit=False)
-            earning.financial_year = FinancialYear.objects.get_or_create(year=get_current_financial_year())[0]
-            earning.save()
-            return redirect('dashboard')
-    else:
-        form = EarningForm()
-    return render(request, 'add_earning.html', {'form': form})
-
-# Add expense
-def add_expense(request):
-    if request.method == 'POST':
-        form = ExpenseForm(request.POST, request.FILES)
-        if form.is_valid():
-            expense = form.save(commit=False)
-            expense.financial_year = FinancialYear.objects.get_or_create(year=get_current_financial_year())[0]
-            expense.save()
-            return redirect('dashboard')
-    else:
-        form = ExpenseForm()
-    return render(request, 'add_expense.html', {'form': form})
-
 # Delete earning
 def delete_earning(request, pk):
     earning = get_object_or_404(Earning, pk=pk)
@@ -139,3 +113,39 @@ class ExpenseUpdateView(UpdateView):
     form_class = ExpenseForm
     template_name = 'expense_update.html'
     success_url = reverse_lazy('dashboard')  # Redirect back to the dashboard after updating
+
+# Add earning
+def add_earning(request):
+    if request.method == 'POST':
+        form = EarningForm(request.POST, request.FILES)
+        if form.is_valid():
+            earning = form.save(commit=False)
+            earning.financial_year = FinancialYear.objects.get_or_create(year=get_current_financial_year())[0]
+            earning.save()
+            return redirect('dashboard')
+    else:
+        form = EarningForm()
+    return render(request, 'add_earning.html', {'form': form})
+
+
+def add_expense(request):
+    if request.method == 'POST':
+        form = ExpenseForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('dashboard')
+            # Redirect or render success page
+    else:
+        form = ExpenseForm()
+    return render(request, 'add_expense.html', {'form': form})
+
+def update_expense(request, pk):
+    expense = Expense.objects.get(pk=pk)
+    if request.method == 'POST':
+        form = ExpenseForm(request.POST, request.FILES, instance=expense)
+        if form.is_valid():
+            form.save()
+            return redirect('dashboard')
+    else:
+        form = ExpenseForm(instance=expense)
+    return render(request, 'expense_update.html', {'form': form})

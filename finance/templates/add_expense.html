@@ -1,11 +1,54 @@
 {% extends 'base.html' %}
+
 {% block content %}
-<div class="container">
-    <h1>Add Expense</h1>
-    <form method="POST">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-primary">Submit</button>
-    </form>
-</div>
+<h1>Add Expense</h1>
+<form method="POST" enctype="multipart/form-data" id="add-expense-form">
+    {% csrf_token %}
+    
+    {{ form.reference.label_tag }} {{ form.reference }}
+    {{ form.description.label_tag }} {{ form.description }}
+    {{ form.amount.label_tag }} {{ form.amount }}
+    {{ form.is_good.label_tag }} {{ form.is_good }}
+
+    <div id="depreciation-rate-field" style="display: none;">
+        {{ form.depreciation_rate.label_tag }} {{ form.depreciation_rate }}
+    </div>
+
+    {{ form.financial_year.label_tag }} {{ form.financial_year }}
+
+    {{ form.expense_type.label_tag }} {{ form.expense_type }}
+    
+    {{ form.attachment.label_tag }} {{ form.attachment }}
+
+    {{ form.date.label_tag }} {{ form.date }}
+
+    {{ form.purchase_date.label_tag }} {{ form.purchase_date }}
+
+    <button type="submit">Add Expense</button>
+</form>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const amountInput = document.getElementById('id_amount');
+        const isGoodInput = document.getElementById('id_is_good');
+        const depreciationRateField = document.getElementById('depreciation-rate-field');
+
+        function toggleDepreciationRateField() {
+            const amount = parseFloat(amountInput.value);
+            const isGood = isGoodInput.checked;
+            if (isGood && amount > 500) {
+                depreciationRateField.style.display = 'block';
+            } else {
+                depreciationRateField.style.display = 'none';
+            }
+        }
+
+        // Initial check on load
+        toggleDepreciationRateField();
+
+        // Event listeners for inputs
+        amountInput.addEventListener('input', toggleDepreciationRateField);
+        isGoodInput.addEventListener('change', toggleDepreciationRateField);
+    });
+</script>
 {% endblock %}

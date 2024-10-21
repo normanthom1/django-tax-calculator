@@ -2,6 +2,7 @@ from django.db import models
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 from decimal import Decimal
+from django.db import models
 
 # Helper function to calculate NZ financial year
 def get_current_financial_year():
@@ -12,21 +13,10 @@ def get_current_financial_year():
     else:
         return today.year - 1
 
-# class FinancialYear(models.Model):
-#     year = models.CharField(max_length=9)  # e.g., "2023-2024"
-#     # Other fields for the FinancialYear model
-
-#     def __str__(self):
-#         return self.year
-from django.db import models
-
-from decimal import Decimal
-
 class FinancialYear(models.Model):
     year = models.IntegerField()
 
     def calculate_tax(self, earnings):
-        # Fetch the permanent income from PersonalDetails
         personal_details = PersonalDetails.objects.first()  # Assuming only one row
         permanent_income = personal_details.permanent_income
 
@@ -41,39 +31,83 @@ class FinancialYear(models.Model):
 
         def calculate_tax_for_income(income):
             tax_owed = 0
-            remaining_income = income  # Remaining income to be taxed
+            remaining_income = income
 
-            # Calculate tax progressively through the tax brackets
             for lower, upper, rate in tax_brackets:
                 if remaining_income > lower:
-                    # The income to tax in this bracket
                     taxable_income_in_bracket = min(remaining_income, upper - lower)
-                    
-                    # Apply the tax rate to the income in this bracket
                     tax_owed += Decimal(taxable_income_in_bracket) * Decimal(rate)
-                    
-                    # Deduct the taxed portion from remaining income
                     remaining_income -= taxable_income_in_bracket
-
-                    # If there's no more remaining income to tax, stop
                     if remaining_income <= 0:
                         break
+            return max(tax_owed, 0)
 
-            return max(tax_owed, 0)  # Ensure tax owed is never negative
-
-        # Calculate taxes separately
         tax_owed_permanent_income = calculate_tax_for_income(permanent_income)
         tax_owed_earnings = calculate_tax_for_income(earnings)
 
         return tax_owed_permanent_income, tax_owed_earnings
 
-    def get_next_year(self):
-        return self.year + 1
+    def __str__(self):
+        return f"Financial Year: {self.year}"
+
+
+class Expense(models.Model):
+    EXPENSE_TYPES = [
+        ('office_supplies', 'Office Supplies'),
+        ('travel', 'Travel'),
+        ('equipment', 'Equipment'),
+        ('utilities', 'Utilities'),
+        ('marketing', 'Marketing'),
+        ('insurance', 'Insurance'),
+        ('salaries', 'Salaries'),
+        ('rent', 'Rent'),
+        ('professional_services', 'Professional Services'),
+    ]
+
+    reference = models.CharField(max_length=20, blank=True, null=True)
+    description = models.CharField(max_length=255)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    is_good = models.BooleanField(default=False)
+    financial_year = models.ForeignKey(FinancialYear, on_delete=models.CASCADE, related_name='expenses')
+    depreciation_rate = models.FloatField(null=True, blank=True)
+    expense_type = models.CharField(max_length=50, choices=EXPENSE_TYPES)
+    attachment = models.FileField(upload_to='earnings_attachments/', blank=True, null=True)
+    # date = models.DateField()
+    purchase_date = models.DateField()  # Ensure this field exists
+
+    def should_depreciate(self):
+        return self.is_good and self.amount > 500
+
+    def depreciation_years(self):
+        if self.depreciation_rate is not None and self.depreciation_rate > 0:
+            depreciation_rate_decimal = Decimal(self.depreciation_rate) / Decimal(100)
+            return int(self.amount / (self.amount * depreciation_rate_decimal))
+        return 0  # Default if no depreciation rate
+
+    def calculate_depreciation(self):
+        if self.is_good and self.depreciation_rate:
+            depreciation_rate_decimal = Decimal(self.depreciation_rate) / Decimal(100)
+            return round(self.amount * depreciation_rate_decimal, 2)
+        return 0
+
+    def tax_impact(self):
+        total_earnings = sum(exp.amount for exp in self.financial_year.expenses.all() if exp.is_good)
+        tax_owed_permanent_income, tax_owed_earnings = self.financial_year.calculate_tax(total_earnings)
+        adjusted_earnings = total_earnings - self.amount
+        adjusted_tax_owed = self.financial_year.calculate_tax(adjusted_earnings)
+        return {
+            'tax_owed_permanent_income': tax_owed_permanent_income,
+            'tax_owed_earnings': tax_owed_earnings,
+            'adjusted_tax_owed': adjusted_tax_owed,
+        }
+
+    def calculate_depreciation_for_year(self, year):
+        current_value = self.amount - self.calculate_depreciation()
+        tax_write_off = self.calculate_depreciation()
+        return current_value, tax_write_off
 
     def __str__(self):
-        return f"Financial Year: {str(self.year)}"
-
-
+        return f"Expense: {self.description} - Amount: {self.amount}"
 
 class Earning(models.Model):
     reference = models.CharField(max_length=20, blank=True, null=True)
@@ -108,54 +142,12 @@ class PersonalDetails(models.Model):
         return f"{self.first_name} {self.last_name}"
 
 
-
-class Expense(models.Model):
-    EXPENSE_TYPES = [
-        ('office_supplies', 'Office Supplies'),
-        ('travel', 'Travel'),
-        ('equipment', 'Equipment'),
-        ('utilities', 'Utilities'),
-        ('marketing', 'Marketing'),
-        ('insurance', 'Insurance'),
-        ('salaries', 'Salaries'),
-        ('rent', 'Rent'),
-        ('professional_services', 'Professional Services'),
-        # Add more types as needed
-    ]
-
-    reference = models.CharField(max_length=20, blank=True, null=True)
-    description = models.CharField(max_length=255)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    date = models.DateField()
-    financial_year = models.ForeignKey(FinancialYear, on_delete=models.CASCADE, related_name='expenses')
-    expense_type = models.CharField(max_length=50, choices=EXPENSE_TYPES)
-    is_depreciating = models.BooleanField(default=False, editable=False)  # Make non-editable
-    depreciation_years = models.IntegerField(null=True, blank=True, editable=False)  # Make non-editable
-    attachment = models.FileField(upload_to='earnings_attachments/', blank=True, null=True)
-
-    def calculate_depreciation_years(self):
-        """Calculate depreciation years based on the amount."""
-        if self.amount < 500:
-            return None  # No depreciation for items under $500
-        elif self.amount < 1000:
-            return 5
-        elif self.amount < 5000:
-            return 10
-        else:
-            return 15
-
-    def save(self, *args, **kwargs):
-        """Override save method to calculate depreciation years automatically."""
-        if self.amount >= 500:  # Automatically set is_depreciating if amount is $500 or more
-            self.is_depreciating = True
-            self.depreciation_years = self.calculate_depreciation_years()
-        else:
-            self.is_depreciating = False  # Set to False if amount is less than $500
-            self.depreciation_years = None  # Reset if not depreciating
-        super().save(*args, **kwargs)
-
-    def __str__(self):
-        return self.description
+class Depreciation(models.Model):
+    expense = models.ForeignKey(Expense, on_delete=models.CASCADE)
+    financial_year = models.ForeignKey('FinancialYear', on_delete=models.CASCADE)
+    current_value = models.DecimalField(max_digits=10, decimal_places=2)
+    tax_write_off = models.DecimalField(max_digits=10, decimal_places=2)
+    years_to_zero = models.IntegerField()
 
 class BusinessCost(models.Model):
     description = models.CharField(max_length=255)
