@@ -33,6 +33,9 @@ def dashboard(request):
     # Calculate tax owed
     tax_owed_permanent_income, tax_owed_earnings = financial_year.calculate_tax(adjusted_earnings)
 
+    # Get personal details
+    personal_details = PersonalDetails.objects.first()
+
     # Prepare the context
     context = {
         'financial_year': financial_year,
@@ -43,6 +46,7 @@ def dashboard(request):
         'total_expenses': total_expenses,
         'tax_owed_permanent_income': tax_owed_permanent_income,
         'tax_owed_earnings': tax_owed_earnings,
+        'gst_registered': personal_details.gst_registered,
     }
 
     return render(request, 'dashboard.html', context)
@@ -96,16 +100,39 @@ def update_personal_details(request):
 
     return render(request, 'update_personal_details.html', {'form': form})
 
+def earnings_detail(request, earnings_id):
+    earning = Earning.objects.get(id=earnings_id)
+    personal_details = PersonalDetails.objects.first()  # Assuming only one row
+    including_gst = earning.amount + earning.gst
 
-class EarningDetailView(DetailView):
-    model = Earning
-    template_name = 'earning_detail.html'  # You need to create this template
-    context_object_name = 'earning'
+    context = {
+        'earning': earning,
+        'including_gst': including_gst,
+        'is_gst_registered': personal_details.gst_registered,
+    }
+    return render(request, 'earning_detail.html', context)
 
-class ExpenseDetailView(DetailView):
-    model = Expense
-    template_name = 'expense_detail.html'  # You need to create this template
-    context_object_name = 'expense'
+# class EarningDetailView(DetailView):
+#     model = Earning
+#     template_name = 'earning_detail.html'  # You need to create this template
+#     context_object_name = 'earning'
+
+def expense_detail(request, expense_id):
+    expense = Expense.objects.get(id=expense_id)
+    personal_details = PersonalDetails.objects.first()  # Assuming only one row
+    total_excluding_gst = expense.amount - expense.gst
+
+    context = {
+        'expense': expense,
+        'is_gst_registered': personal_details.gst_registered,
+        'total_excluding_gst': total_excluding_gst
+    }
+    return render(request, 'expense_detail.html', context)
+
+# class ExpenseDetailView(DetailView):
+#     model = Expense
+#     template_name = 'expense_detail.html'  # You need to create this template
+#     context_object_name = 'expense'
 
 class EarningUpdateView(UpdateView):
     model = Earning

@@ -102,13 +102,24 @@
     </div>
     <table class="table">
         <thead>
-            <tr><th>Description</th><th>Amount</th><th>Date</th><th></th></tr>
+            <tr>
+                <th>Reference</th>
+                <th>Amount</th>
+                {% if gst_registered %}
+                <th>GST</th>
+                {% endif %}
+                <th>Date</th>
+                <th></th>
+            </tr>
         </thead>
         <tbody>
         {% for earning in earnings %}
             <tr>
                 <td><a href="{% url 'earning_detail' earning.pk %}">{{ earning.reference }}</a></td>
                 <td>{{ earning.amount }}</td>
+                {% if gst_registered %}
+                <td>{{ earning.gst }}</td>
+                {% endif %}
                 <td>{{ earning.date }}</td>
                 <td>
                     <a href="{% url 'earning_update' earning.pk %}" class="btn btn-warning">Update</a>
@@ -135,7 +146,12 @@
     </div>
     <table class="table">
         <thead>
-            <tr><th>Description</th><th>Amount</th><th>Date</th><th></th></tr>
+            <tr>
+                <th>Reference</th>
+                <th>Amount</th>
+                <th>Date</th>
+                <th></th>
+            </tr>
         </thead>
         <tbody>
         {% for expense in expenses %}

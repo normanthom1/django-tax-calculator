@@ -4,6 +4,8 @@ from django.core.exceptions import ValidationError
 from decimal import Decimal
 from django.db import models
 
+GST_RATE = Decimal('0.15')
+
 # Helper function to calculate NZ financial year
 def get_current_financial_year():
     today = timezone.now().date()
@@ -75,6 +77,7 @@ class Expense(models.Model):
     depreciation_rate = models.FloatField(null=True, blank=True)
     expense_type = models.CharField(max_length=50, choices=EXPENSE_TYPES)
     attachment = models.FileField(upload_to='earnings_attachments/', blank=True, null=True)
+    gst = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     # date = models.DateField()
     purchase_date = models.DateField()  # Ensure this field exists
 
@@ -109,6 +112,11 @@ class Expense(models.Model):
         tax_write_off = self.calculate_depreciation()
         return current_value, tax_write_off
 
+    def save(self, *args, **kwargs):
+        # Calculate GST as the portion of total amount
+        self.gst = self.amount - (self.amount / (1 + GST_RATE))
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f"Expense: {self.description} - Amount: {self.amount}"
 
@@ -119,6 +127,12 @@ class Earning(models.Model):
     date = models.DateField()
     financial_year = models.ForeignKey(FinancialYear, on_delete=models.CASCADE, related_name='earnings')
     attachment = models.FileField(upload_to='earnings_attachments/', blank=True, null=True)
+    gst = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+
+    def save(self, *args, **kwargs):
+        # Calculate GST as 15% of the amount for earnings
+        self.gst = self.amount * GST_RATE
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.description

@@ -13,9 +13,15 @@
                 <td>{{ expense.description }}</td>
             </tr>
             <tr>
-                <td><strong>Amount</strong></td>
+                <td><strong>Total (including GST)</strong></td>
                 <td>{{ expense.amount|floatformat:2 }} NZD</td>
             </tr>
+            {% if is_gst_registered %}
+            <tr>
+                <td><strong>Total (excluding GST)</strong></td>
+                <td>${{ total_excluding_gst|floatformat:2 }} NZD</td>
+            </tr>
+            {% endif %}
             <tr>
                 <td><strong>Date</strong></td>
                 <td>{{ expense.purchase_date }}</td>

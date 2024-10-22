@@ -16,6 +16,12 @@
                 <td><strong>Amount</strong></td>
                 <td>{{ earning.amount|floatformat:2 }} NZD</td>
             </tr>
+            {% if is_gst_registered %}
+            <tr>
+                <td><strong>Amount (Including GST)</strong></td>
+                <td>{{ including_gst|floatformat:2 }} NZD</td>
+            </tr>
+            {% endif %}
             <tr>
                 <td><strong>Date</strong></td>
                 <td>{{ earning.date }}</td>

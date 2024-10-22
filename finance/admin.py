@@ -7,12 +7,12 @@ class FinancialYearAdmin(admin.ModelAdmin):
     search_fields = ['year']
 
 class EarningAdmin(admin.ModelAdmin):
-    list_display = ['description', 'amount', 'date', 'financial_year']
+    list_display = ['description', 'amount', 'date', 'financial_year', 'gst']
     search_fields = ['description']
     list_filter = ['financial_year']
 
 class ExpenseAdmin(admin.ModelAdmin):
-    list_display = ['description', 'amount', 'purchase_date', 'financial_year']
+    list_display = ['description', 'amount', 'purchase_date', 'financial_year', 'gst']
     search_fields = ['description']
     list_filter = ['financial_year']
 

@@ -9,8 +9,8 @@ urlpatterns = [
     path('delete-earning/<int:pk>/', views.delete_earning, name='delete_earning'),
     path('delete-expense/<int:pk>/', views.delete_expense, name='delete_expense'),
     path('update-personal-details/', views.update_personal_details, name='update_personal_details'),
-    path('earning/<int:pk>/', views.EarningDetailView.as_view(), name='earning_detail'),
-    path('expense/<int:pk>/', views.ExpenseDetailView.as_view(), name='expense_detail'),
+    path('earning/<int:earnings_id>/', views.earnings_detail, name='earning_detail'),
+    path('expense/<int:expense_id>/', views.expense_detail, name='expense_detail'),
     path('earning/update/<int:pk>/', views.EarningUpdateView.as_view(), name='earning_update'),
     path('expense/update/<int:pk>/', views.update_expense, name='update_expense'),
 ]
