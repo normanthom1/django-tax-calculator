@@ -27,8 +27,11 @@ def dashboard(request):
     total_earnings = earnings.aggregate(total=Sum('amount'))['total'] or Decimal(0)
     total_expenses = expenses.aggregate(total=Sum('amount'))['total'] or Decimal(0)
 
-    # Use the model's calculate_tax method to get the correct tax owed
-    tax_owed_permanent_income, tax_owed_earnings = financial_year.calculate_tax(total_earnings)
+    # Calculate adjusted earnings
+    adjusted_earnings = total_earnings - total_expenses
+
+    # Calculate tax owed
+    tax_owed_permanent_income, tax_owed_earnings = financial_year.calculate_tax(adjusted_earnings)
 
     # Prepare the context
     context = {
@@ -44,6 +47,28 @@ def dashboard(request):
 
     return render(request, 'dashboard.html', context)
 
+# Financial year details
+def financial_year_detail(request, pk):
+    financial_year = get_object_or_404(FinancialYear, pk=pk)
+    earnings = Earning.objects.filter(financial_year=financial_year)
+    expenses = Expense.objects.filter(financial_year=financial_year)
+
+    total_earnings = sum(earning.amount for earning in earnings)
+    total_expenses = sum(expense.amount for expense in expenses)
+
+    # Calculate tax owed using the updated model method
+    tax_owed_permanent_income, tax_owed_earnings = financial_year.calculate_tax(total_earnings)
+
+    return render(request, 'financial_year_detail.html', {
+        'financial_year': financial_year,
+        'earnings': earnings,
+        'expenses': expenses,
+        'total_earnings': total_earnings,
+        'total_expenses': total_expenses,
+        'tax_owed_permanent_income': tax_owed_permanent_income,
+        'tax_owed_earnings': tax_owed_earnings,
+    })
+
 # Delete earning
 def delete_earning(request, pk):
     earning = get_object_or_404(Earning, pk=pk)
@@ -56,27 +81,6 @@ def delete_expense(request, pk):
     expense.delete()
     return redirect('dashboard')
 
-# Financial year details
-def financial_year_detail(request, pk):
-    # financial_year = get_object_or_404(FinancialYear, pk=pk)
-    financial_year = FinancialYear.objects.get(current=True)
-    earnings = Earning.objects.filter(financial_year=financial_year)
-    expenses = Expense.objects.filter(financial_year=financial_year)
-    # total_earnings = earnings.aggregate(total=models.Sum('amount'))['total'] or 0
-    total_earnings = sum(earning.amount for earning in financial_year.earnings.all())
-    # total_expenses = expenses.aggregate(total=models.Sum('amount'))['total'] or 0
-    total_expenses = sum(expense.amount for expense in financial_year.expenses.all())
-    # tax_owed = total_earnings * 0.33 - total_expenses
-    tax_owed = financial_year.calculate_tax(total_earnings)
-
-    return render(request, 'financial_year_detail.html', {
-        'financial_year': financial_year,
-        'earnings': earnings,
-        'expenses': expenses,
-        'total_earnings': total_earnings,
-        'total_expenses': total_expenses,
-        'tax_owed': tax_owed,
-    })
 
 def update_personal_details(request):
     # Get the existing instance or create one

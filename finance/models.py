@@ -13,6 +13,7 @@ def get_current_financial_year():
     else:
         return today.year - 1
 
+
 class FinancialYear(models.Model):
     year = models.IntegerField()
 
@@ -20,7 +21,7 @@ class FinancialYear(models.Model):
         personal_details = PersonalDetails.objects.first()  # Assuming only one row
         permanent_income = personal_details.permanent_income
 
-        # New Zealand tax brackets as of 2023 (adjust as needed)
+        # New Zealand tax brackets as of 2023
         tax_brackets = [
             (0, 14000, 0.105),     # 10.5% on income up to $14,000
             (14001, 48000, 0.175), # 17.5% on income over $14,000 up to $48,000
@@ -30,25 +31,27 @@ class FinancialYear(models.Model):
         ]
 
         def calculate_tax_for_income(income):
-            tax_owed = 0
+            tax_owed = Decimal(0)
             remaining_income = income
 
             for lower, upper, rate in tax_brackets:
                 if remaining_income > lower:
-                    taxable_income_in_bracket = min(remaining_income, upper - lower)
-                    tax_owed += Decimal(taxable_income_in_bracket) * Decimal(rate)
-                    remaining_income -= taxable_income_in_bracket
-                    if remaining_income <= 0:
-                        break
-            return max(tax_owed, 0)
+                    taxable_income_in_bracket = min(remaining_income, upper) - lower
+                    
+                    if taxable_income_in_bracket > 0:
+                        tax_owed += Decimal(taxable_income_in_bracket) * Decimal(rate)
+                        # remaining_income -= taxable_income_in_bracket
 
+                    # if remaining_income <= 0:
+                        # break
+            
+            return tax_owed
+
+        # Calculate taxes separately for permanent income and earnings
         tax_owed_permanent_income = calculate_tax_for_income(permanent_income)
         tax_owed_earnings = calculate_tax_for_income(earnings)
 
-        return tax_owed_permanent_income, tax_owed_earnings
-
-    def __str__(self):
-        return f"Financial Year: {self.year}"
+        return round(tax_owed_permanent_income, 2), round(tax_owed_earnings, 2)
 
 
 class Expense(models.Model):
