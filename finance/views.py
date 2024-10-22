@@ -9,6 +9,7 @@ from django.urls import reverse_lazy
 from decimal import Decimal
 from django.shortcuts import render
 from .models import FinancialYear, Earning, Expense, BusinessCost
+from django.http import HttpResponse
 
 def dashboard(request):
     # Get the current financial year
@@ -130,22 +131,43 @@ def add_earning(request):
 
 def add_expense(request):
     if request.method == 'POST':
-        form = ExpenseForm(request.POST)
+        form = ExpenseForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
+            expense = form.save(commit=False)  # Don't save to the database yet
+            
+            # Set the financial_year from cleaned_data
+            financial_year = form.cleaned_data.get('financial_year')
+            if financial_year:
+                expense.financial_year = financial_year
+            
+            expense.save()  # Now save to the database
             return redirect('dashboard')
-            # Redirect or render success page
+        else:
+            print(form.errors)
     else:
         form = ExpenseForm()
+
     return render(request, 'add_expense.html', {'form': form})
 
 def update_expense(request, pk):
     expense = Expense.objects.get(pk=pk)
+    
     if request.method == 'POST':
         form = ExpenseForm(request.POST, request.FILES, instance=expense)
+        
         if form.is_valid():
-            form.save()
+            expense = form.save(commit=False)  # Don't save to the database yet
+
+            # Set the financial_year from cleaned_data
+            financial_year = form.cleaned_data.get('financial_year')
+            if financial_year:
+                expense.financial_year = financial_year
+
+            expense.save()  # Now save to the database
             return redirect('dashboard')
+        else:
+            print(form.errors)
     else:
         form = ExpenseForm(instance=expense)
+    
     return render(request, 'expense_update.html', {'form': form})
