@@ -1,5 +1,7 @@
 from django.urls import path
 from . import views
+from django.conf.urls.static import static
+from django.conf import settings
 
 urlpatterns = [
     path('', views.dashboard, name='dashboard'),
@@ -13,4 +15,4 @@ urlpatterns = [
     path('expense/<int:expense_id>/', views.expense_detail, name='expense_detail'),
     path('earning/update/<int:pk>/', views.EarningUpdateView.as_view(), name='earning_update'),
     path('expense/update/<int:pk>/', views.update_expense, name='update_expense'),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

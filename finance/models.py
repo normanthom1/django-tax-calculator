@@ -76,7 +76,7 @@ class Expense(models.Model):
     financial_year = models.ForeignKey(FinancialYear, on_delete=models.CASCADE, related_name='expenses')
     depreciation_rate = models.FloatField(null=True, blank=True)
     expense_type = models.CharField(max_length=50, choices=EXPENSE_TYPES)
-    attachment = models.FileField(upload_to='earnings_attachments/', blank=True, null=True)
+    attachment = models.FileField(upload_to='expenses_attachments/', blank=True, null=True)
     gst = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     # date = models.DateField()
     purchase_date = models.DateField()  # Ensure this field exists

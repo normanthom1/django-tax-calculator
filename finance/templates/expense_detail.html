@@ -38,7 +38,8 @@
                 <td><strong>Attachment</strong></td>
                 <td>
                     {% if expense.attachment %}
-                        <a href="{{ expense.attachment.url }}" target="_blank">View Attachment</a>
+                        <a href="{{ expense.attachment.url }}" class="btn btn-success" target="_blank">View</a>
+                        <a href="{{ expense.attachment.url }}" class="btn btn-primary" download>Download</a>
                     {% else %}
                         No attachment
                     {% endif %}
