@@ -6,18 +6,18 @@ from django.utils import timezone
 from django.db.models import Avg, Count, Min, Sum
 from django.views.generic import DetailView, UpdateView
 from django.urls import reverse_lazy
-from decimal import Decimal
-from django.shortcuts import render
-from .models import FinancialYear, Earning, Expense, BusinessCost
 from django.http import HttpResponse
 
 GST_RATE = Decimal(0.15)
 
 def dashboard(request):
-    # Get the current financial year
+    """
+    Render the dashboard showing the current financial year, total earnings,
+    expenses, and tax owed based on personal details.
+    """
     current_financial_year = get_current_financial_year()
     financial_year, created = FinancialYear.objects.get_or_create(year=current_financial_year)
-    
+
     # Get personal details
     personal_details = PersonalDetails.objects.first()
 
@@ -57,8 +57,11 @@ def dashboard(request):
     return render(request, 'dashboard.html', context)
 
 
-# Financial year details
 def financial_year_detail(request, pk):
+    """
+    Render the details of a specific financial year, including total earnings,
+    expenses, and tax owed.
+    """
     financial_year = get_object_or_404(FinancialYear, pk=pk)
     earnings = Earning.objects.filter(financial_year=financial_year)
     expenses = Expense.objects.filter(financial_year=financial_year)
@@ -79,21 +82,28 @@ def financial_year_detail(request, pk):
         'tax_owed_earnings': tax_owed_earnings,
     })
 
-# Delete earning
 def delete_earning(request, pk):
+    """
+    Delete a specific earning entry and redirect to the dashboard.
+    """
     earning = get_object_or_404(Earning, pk=pk)
     earning.delete()
     return redirect('dashboard')
 
-# Delete expense
 def delete_expense(request, pk):
+    """
+    Delete a specific expense entry and redirect to the dashboard.
+    """
     expense = get_object_or_404(Expense, pk=pk)
     expense.delete()
     return redirect('dashboard')
 
 
 def update_personal_details(request):
-    # Get the existing instance or create one
+    """
+    Update personal details. If no instance exists, create a new one.
+    Redirect to the dashboard after saving changes.
+    """
     personal_details, created = PersonalDetails.objects.get_or_create()
 
     if request.method == 'POST':
@@ -107,6 +117,10 @@ def update_personal_details(request):
     return render(request, 'update_personal_details.html', {'form': form})
 
 def earnings_detail(request, earnings_id):
+    """
+    Render the details of a specific earning, including the amount and GST
+    based on personal details.
+    """
     earning = Earning.objects.get(id=earnings_id)
     personal_details = PersonalDetails.objects.first()  # Assuming only one row
     including_gst = earning.amount + earning.gst
@@ -118,12 +132,11 @@ def earnings_detail(request, earnings_id):
     }
     return render(request, 'earning_detail.html', context)
 
-# class EarningDetailView(DetailView):
-#     model = Earning
-#     template_name = 'earning_detail.html'  # You need to create this template
-#     context_object_name = 'earning'
-
 def expense_detail(request, expense_id):
+    """
+    Render the details of a specific expense, including the amount and GST
+    based on personal details.
+    """
     expense = Expense.objects.get(id=expense_id)
     personal_details = PersonalDetails.objects.first()  # Assuming only one row
     total_excluding_gst = expense.amount - expense.gst
@@ -135,25 +148,28 @@ def expense_detail(request, expense_id):
     }
     return render(request, 'expense_detail.html', context)
 
-# class ExpenseDetailView(DetailView):
-#     model = Expense
-#     template_name = 'expense_detail.html'  # You need to create this template
-#     context_object_name = 'expense'
-
 class EarningUpdateView(UpdateView):
+    """
+    Update view for Earning instances. Redirects to the dashboard after
+    a successful update.
+    """
     model = Earning
     form_class = EarningForm
     template_name = 'earning_update.html'
     success_url = reverse_lazy('dashboard')  # Redirect back to the dashboard after updating
 
-class ExpenseUpdateView(UpdateView):
-    model = Expense
-    form_class = ExpenseForm
-    template_name = 'expense_update.html'
-    success_url = reverse_lazy('dashboard')  # Redirect back to the dashboard after updating
-
-# Add earning
+    def get_context_data(self, **kwargs):
+        """
+        Add additional context variables to the template.
+        """
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Update Earning'
+        return context
+        
 def add_earning(request):
+    """
+    Add a new earning entry. Redirect to the dashboard upon successful addition.
+    """
     if request.method == 'POST':
         form = EarningForm(request.POST, request.FILES)
         if form.is_valid():
@@ -165,18 +181,20 @@ def add_earning(request):
         form = EarningForm()
     return render(request, 'add_earning.html', {'form': form})
 
-
 def add_expense(request):
+    """
+    Add a new expense entry. Redirect to the dashboard upon successful addition.
+    """
     if request.method == 'POST':
         form = ExpenseForm(request.POST, request.FILES)
         if form.is_valid():
             expense = form.save(commit=False)  # Don't save to the database yet
-            
+
             # Set the financial_year from cleaned_data
             financial_year = form.cleaned_data.get('financial_year')
             if financial_year:
                 expense.financial_year = financial_year
-            
+
             expense.save()  # Now save to the database
             return redirect('dashboard')
         else:
@@ -187,11 +205,14 @@ def add_expense(request):
     return render(request, 'add_expense.html', {'form': form})
 
 def update_expense(request, pk):
+    """
+    Update a specific expense entry. Redirect to the dashboard upon successful update.
+    """
     expense = Expense.objects.get(pk=pk)
-    
+
     if request.method == 'POST':
         form = ExpenseForm(request.POST, request.FILES, instance=expense)
-        
+
         if form.is_valid():
             expense = form.save(commit=False)  # Don't save to the database yet
 
@@ -206,5 +227,5 @@ def update_expense(request, pk):
             print(form.errors)
     else:
         form = ExpenseForm(instance=expense)
-    
+
     return render(request, 'expense_update.html', {'form': form})
