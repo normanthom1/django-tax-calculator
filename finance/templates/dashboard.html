@@ -37,6 +37,16 @@
                 <td><strong>Tax Owed for Earnings</strong></td>
                 <td>{{ tax_owed_earnings|floatformat:2 }} NZD</td>
             </tr>
+            {% if gst_registered %}
+            <tr>
+                <td><strong>Total GST to Pay</strong></td>
+                <td>{{ gst_to_pay|floatformat:2 }} NZD</td>
+            </tr>
+            <tr>
+                <td><strong>Total GST to Claim</strong></td>
+                <td>{{ gst_to_claim|floatformat:2 }} NZD</td>
+            </tr>
+            {% endif %}
         </tbody>
     </table>
     <br>

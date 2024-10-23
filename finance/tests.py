@@ -3,6 +3,7 @@ from django.utils import timezone
 from django.core.files.uploadedfile import SimpleUploadedFile
 from .models import Earning, Expense, PersonalDetails, FinancialYear
 from django.core.exceptions import ValidationError
+from decimal import Decimal
 
 
 class ModelTests(TestCase):
@@ -21,7 +22,7 @@ class ModelTests(TestCase):
         self.expense_data = {
             'description': 'Office rent',
             'amount': 800.00,
-            'date': timezone.now(),
+            'purchase_date': timezone.now(),
             'attachment': SimpleUploadedFile('rent_receipt.pdf', b'file_content', content_type='application/pdf'),
             'reference': 'EXP456',
             'financial_year': self.financial_year,

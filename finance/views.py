@@ -11,6 +11,8 @@ from django.shortcuts import render
 from .models import FinancialYear, Earning, Expense, BusinessCost
 from django.http import HttpResponse
 
+GST_RATE = Decimal(0.15)
+
 def dashboard(request):
     # Get the current financial year
     current_financial_year = get_current_financial_year()
@@ -33,8 +35,9 @@ def dashboard(request):
     # Calculate tax owed
     tax_owed_permanent_income, tax_owed_earnings = financial_year.calculate_tax(adjusted_earnings)
 
-    # Get personal details
-    personal_details = PersonalDetails.objects.first()
+    # Calculate GST if registered
+    gst_to_pay = total_earnings * GST_RATE if personal_details.gst_registered else Decimal(0)
+    gst_to_claim = total_expenses * GST_RATE if personal_details.gst_registered else Decimal(0)
 
     # Prepare the context
     context = {
@@ -47,9 +50,12 @@ def dashboard(request):
         'tax_owed_permanent_income': tax_owed_permanent_income,
         'tax_owed_earnings': tax_owed_earnings,
         'gst_registered': personal_details.gst_registered,
+        'gst_to_pay': gst_to_pay,
+        'gst_to_claim': gst_to_claim,
     }
 
     return render(request, 'dashboard.html', context)
+
 
 # Financial year details
 def financial_year_detail(request, pk):

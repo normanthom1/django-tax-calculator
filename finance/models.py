@@ -114,6 +114,7 @@ class Expense(models.Model):
 
     def save(self, *args, **kwargs):
         # Calculate GST as the portion of total amount
+        self.amount = Decimal(self.amount)
         self.gst = self.amount - (self.amount / (1 + GST_RATE))
         super().save(*args, **kwargs)
 
@@ -131,7 +132,7 @@ class Earning(models.Model):
 
     def save(self, *args, **kwargs):
         # Calculate GST as 15% of the amount for earnings
-        self.gst = self.amount * GST_RATE
+        self.gst = Decimal(self.amount) * GST_RATE
         super().save(*args, **kwargs)
 
     def __str__(self):
