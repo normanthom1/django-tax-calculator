@@ -16,7 +16,7 @@ class FinancialYear(models.Model):
     """Model representing a financial year."""
     year = models.IntegerField()
 
-    def calculate_tax(self, earnings):
+    def calculate_tax(self, earnings, gst_registered):
         """Calculate tax owed based on earnings and personal income."""
         personal_details = PersonalDetails.objects.first()  # Assuming only one row
         permanent_income = personal_details.permanent_income
@@ -41,9 +41,15 @@ class FinancialYear(models.Model):
                         tax_owed += Decimal(taxable_income_in_bracket) * Decimal(rate)
             return tax_owed
 
-        # Calculate taxes separately for permanent income and earnings
+        # Calculate taxes separately for permanent income
         tax_owed_permanent_income = calculate_tax_for_income(permanent_income)
-        tax_owed_earnings = calculate_tax_for_income(earnings)
+
+        # Adjust earnings based on GST registration
+        if gst_registered:
+            earnings_excluding_gst = earnings / (1 + GST_RATE)
+            tax_owed_earnings = calculate_tax_for_income(earnings_excluding_gst)
+        else:
+            tax_owed_earnings = calculate_tax_for_income(earnings)
 
         return round(tax_owed_permanent_income, 2), round(tax_owed_earnings, 2)
 

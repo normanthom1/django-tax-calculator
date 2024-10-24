@@ -35,7 +35,7 @@ def dashboard(request):
     adjusted_earnings = total_earnings - total_expenses
 
     # Calculate tax owed
-    tax_owed_permanent_income, tax_owed_earnings = financial_year.calculate_tax(adjusted_earnings)
+    tax_owed_permanent_income, tax_owed_earnings = financial_year.calculate_tax(adjusted_earnings, personal_details.gst_registered)
 
     # Calculate GST if registered
     gst_to_pay = total_earnings * GST_RATE if personal_details.gst_registered else Decimal(0)
@@ -80,7 +80,7 @@ def dashboard_pdf(request):
     adjusted_earnings = total_earnings - total_expenses
 
     # Calculate tax owed
-    tax_owed_permanent_income, tax_owed_earnings = financial_year.calculate_tax(adjusted_earnings)
+    tax_owed_permanent_income, tax_owed_earnings = financial_year.calculate_tax(adjusted_earnings, personal_details.gst_registered)
 
     # Calculate GST if registered
     gst_to_pay = total_earnings * GST_RATE if personal_details.gst_registered else Decimal(0)
