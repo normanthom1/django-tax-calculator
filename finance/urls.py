@@ -5,6 +5,7 @@ from django.conf import settings
 
 urlpatterns = [
     path('', views.dashboard, name='dashboard'),
+    path('dashboard/pdf/', views.dashboard_pdf, name='dashboard_pdf'),
     path('add-earning/', views.add_earning, name='add_earning'),
     path('add-expense/', views.add_expense, name='add_expense'),
     path('financial-year/<int:pk>/', views.financial_year_detail, name='financial_year_detail'),

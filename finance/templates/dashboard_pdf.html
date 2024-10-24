@@ -1,0 +1,153 @@
+
+{% load custom_filters %}
+<h1>Tax Summary for {{ financial_year.year }}</h1>
+<p><i>Produced on {% now "d/m/Y" %}</i></p>
+<br>
+<hr>
+<br>
+<div>
+    <div>
+        <div>
+          <div>
+            <h3>Personal Details</h3>
+          </div>
+        </div>
+    </div>
+    <table>
+        <tbody>
+            <tr>
+                <td><strong>Name</strong></td>
+                <td>{{ personal_details.first_name }} {{ personal_details.last_name }}</td>
+            </tr>
+            <tr>
+                <td><strong>Email</strong></td>
+                <td>{{ personal_details.email }}</td>
+            </tr>
+            <tr>
+                <td><strong>GST Registered</strong></td>
+                <td>{{ personal_details.gst_registered|yesno:"Yes,No" }}</td>
+            </tr>
+            <tr>
+                <td><strong>Permanent Income</strong></td>
+                <td>${{ personal_details.permanent_income|floatformat:0 }} NZD</td>
+            </tr>
+            <tr>
+                <td><strong>Phone Number</strong></td>
+                <td>{{ personal_details.phone_number }}</td>
+            </tr>
+            <tr>
+                <td><strong>Address</strong></td>
+                <td>{{ personal_details.address }}</td>
+            </tr>
+        </tbody>
+    </table>
+    <br>
+    <hr>
+    <br>
+    <div>
+        <div>
+          <div>
+            <h3>Tax Summary</h3>
+          </div>
+        </div>
+    </div>
+    <table>
+        <tbody>
+            <tr>
+                <td><strong>Current Financial Year</strong></td>
+                <td>{{ financial_year.year }}</td>
+            </tr>
+            <tr>
+                <td><strong>Total Earnings</strong></td>
+                <td>${{ total_earnings|floatformat:0 }} NZD</td>
+            </tr>
+            <tr>
+                <td><strong>Total Expenses</strong></td>
+                <td>${{ total_expenses|floatformat:0 }} NZD</td>
+            </tr>
+            <tr>
+                <td><strong>Tax Owed for Permanent Income</strong></td>
+                <td>${{ tax_owed_permanent_income|floatformat:0 }} NZD</td>
+            </tr>
+            <tr>
+                <td><strong>Tax Owed for Earnings</strong></td>
+                <td>${{ tax_owed_earnings|floatformat:0 }} NZD</td>
+            </tr>
+            {% if gst_registered %}
+            <tr>
+                <td><strong>Total GST to Pay</strong></td>
+                <td>${{ gst_to_pay|floatformat:0 }} NZD</td>
+            </tr>
+            <tr>
+                <td><strong>Total GST to Claim</strong></td>
+                <td>${{ gst_to_claim|floatformat:0 }} NZD</td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+    <br>
+    <hr>
+    <br>
+
+    <h3>Earnings</h3>
+    <table>
+        <thead>
+            <tr>
+                <th style="text-align: left;">Reference</th>
+                <th style="text-align: left;">Amount</th>
+                {% if gst_registered %}
+                <th style="text-align: left;">Amount (Inc. GST)</th>
+                {% endif %}
+                <th style="text-align: left;">Date</th>
+                <th style="text-align: left;">Description</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for earning in earnings %}
+            <tr>
+                <td>{{ earning.reference }}</td>
+                <td>${{ earning.amount|floatformat:0 }} NZD</td>
+                {% if gst_registered %}
+                <td>${{ earning.amount|add:earning.gst|floatformat:0 }} NZD</td>
+                {% endif %}
+                <td>{{ earning.date|date:"d/m/Y"  }}</td>
+                <td>{{ earning.description }}</td>
+            </tr>
+        {% empty %}
+            <tr><td>No earnings yet.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <br>
+    <hr>
+    <br>
+
+    <h3>Expenses</h3>
+    <table>
+        <thead>
+            <tr>
+                <th style="text-align: left;">Reference</th>
+                <th style="text-align: left;">Amount</th>
+                <th style="text-align: left;">Amount (Exc. GST)</th>
+                <th style="text-align: left;">Purchase Date</th>
+                <th style="text-align: left;">Expense Type</th>
+                <th style="text-align: left;">Description</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for expense in expenses %}
+            <tr>
+                <td>{{ expense.reference }}</td>
+                <td>${{ expense.amount|floatformat:0 }} NZD</td>
+                <td>${{ expense.amount|subtract:expense.gst|floatformat:0 }} NZD</td>
+                <td>{{ expense.purchase_date|date:"d/m/Y"  }}</td>
+                <td>{{ expense.expense_type }}</td>
+                <td>{{ expense.description }}</td>
+            </tr>
+        {% empty %}
+            <tr><td>No expenses yet.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+

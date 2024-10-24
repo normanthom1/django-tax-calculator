@@ -1,7 +1,17 @@
 {% extends 'base.html' %}
 {% block content %}
+{% load custom_filters %}
 <div class="container">
-    <h1>Dashboard</h1>
+    <div class="container">
+        <div class="row">
+          <div class="col-9">
+            <h1>Dashboard</h1>
+          </div>
+          <div class="col-3">
+            <a href="{% url 'dashboard_pdf' %}" class="btn btn-success btn-md btn-block">Download PDF</a>
+          </div>
+        </div>
+    </div>
     <br>
     <hr class="dotted">
     <br>
@@ -11,7 +21,6 @@
             <h3>Tax Summary</h3>
           </div>
           <div class="col-3">
-            <!-- <a href="{% url 'update_personal_details' %}" class="btn btn-warning btn-md btn-block">Update</a> -->
           </div>
         </div>
     </div>
@@ -23,28 +32,28 @@
             </tr>
             <tr>
                 <td><strong>Total Earnings</strong></td>
-                <td>{{ total_earnings|floatformat:2 }} NZD</td>
+                <td>${{ total_earnings|floatformat:0 }} NZD</td>
             </tr>
             <tr>
                 <td><strong>Total Expenses</strong></td>
-                <td>{{ total_expenses|floatformat:2 }} NZD</td>
+                <td>${{ total_expenses|floatformat:0 }} NZD</td>
             </tr>
             <tr>
                 <td><strong>Tax Owed for Permanent Income</strong></td>
-                <td>{{ tax_owed_permanent_income|floatformat:2 }} NZD</td>
+                <td>${{ tax_owed_permanent_income|floatformat:0 }} NZD</td>
             </tr>
             <tr>
                 <td><strong>Tax Owed for Earnings</strong></td>
-                <td>{{ tax_owed_earnings|floatformat:2 }} NZD</td>
+                <td>${{ tax_owed_earnings|floatformat:0 }} NZD</td>
             </tr>
             {% if gst_registered %}
             <tr>
                 <td><strong>Total GST to Pay</strong></td>
-                <td>{{ gst_to_pay|floatformat:2 }} NZD</td>
+                <td>${{ gst_to_pay|floatformat:0 }} NZD</td>
             </tr>
             <tr>
                 <td><strong>Total GST to Claim</strong></td>
-                <td>{{ gst_to_claim|floatformat:2 }} NZD</td>
+                <td>${{ gst_to_claim|floatformat:0 }} NZD</td>
             </tr>
             {% endif %}
         </tbody>
@@ -63,11 +72,6 @@
         </div>
     </div>
     <table class="table table-bordered">
-        <!-- <thead>
-            <tr>
-                <th colspan="2" class="text-center">Personal Details</th>
-            </tr>
-        </thead> -->
         <tbody>
             <tr>
                 <td><strong>Name</strong></td>
@@ -83,7 +87,7 @@
             </tr>
             <tr>
                 <td><strong>Permanent Income</strong></td>
-                <td>{{ personal_details.permanent_income|floatformat:2 }} NZD</td>
+                <td>${{ personal_details.permanent_income|floatformat:0 }} NZD</td>
             </tr>
             <tr>
                 <td><strong>Phone Number</strong></td>
@@ -110,27 +114,29 @@
           </div>
         </div>
     </div>
+
     <table class="table">
         <thead>
             <tr>
                 <th>Reference</th>
                 <th>Amount</th>
                 {% if gst_registered %}
-                <th>GST</th>
+                <th>Amount (Inc. GST)</th>
                 {% endif %}
                 <th>Date</th>
-                <th></th>
+                <th>Description</th>
             </tr>
         </thead>
         <tbody>
         {% for earning in earnings %}
             <tr>
                 <td><a href="{% url 'earning_detail' earning.pk %}">{{ earning.reference }}</a></td>
-                <td>{{ earning.amount }}</td>
+                <td>${{ earning.amount|floatformat:0 }} NZD</td>
                 {% if gst_registered %}
-                <td>{{ earning.gst }}</td>
+                <td>${{ earning.amount|add:earning.gst|floatformat:0 }} NZD</td>
                 {% endif %}
-                <td>{{ earning.date }}</td>
+                <td>{{ earning.date|date:"d/m/Y"  }}</td>
+                <td>{{ earning.description }}</td>
                 <td>
                     <a href="{% url 'earning_update' earning.pk %}" class="btn btn-warning">Update</a>
                     <a href="{% url 'delete_earning' earning.pk %}" class="btn btn-danger">Delete</a>
@@ -154,21 +160,27 @@
           </div>
         </div>
     </div>
+
     <table class="table">
         <thead>
             <tr>
                 <th>Reference</th>
                 <th>Amount</th>
-                <th>Date</th>
-                <th></th>
+                <th>Amount (Exc. GST)</th>
+                <th>Purchase Date</th>
+                <th>Expense Type</th>
+                <th>Description</th>
             </tr>
         </thead>
         <tbody>
         {% for expense in expenses %}
             <tr>
                 <td><a href="{% url 'expense_detail' expense.pk %}">{{ expense.reference }}</a></td>
-                <td>{{ expense.amount }}</td>
-                <td>{{ expense.purchase_date }}</td>
+                <td>${{ expense.amount|floatformat:0 }} NZD</td>
+                <td>${{ expense.amount|subtract:expense.gst|floatformat:0 }} NZD</td>
+                <td>{{ expense.purchase_date|date:"d/m/Y"  }}</td>
+                <td>{{ expense.expense_type }}</td>
+                <td>{{ expense.description }}</td>
                 <td>
                     <a href="{% url 'update_expense' expense.pk %}" class="btn btn-warning">Update</a>
                     <a href="{% url 'delete_expense' expense.pk %}" class="btn btn-danger">Delete</a>

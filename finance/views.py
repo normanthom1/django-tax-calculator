@@ -7,6 +7,8 @@ from django.db.models import Avg, Count, Min, Sum
 from django.views.generic import DetailView, UpdateView
 from django.urls import reverse_lazy
 from django.http import HttpResponse
+from xhtml2pdf import pisa
+from django.template.loader import get_template
 
 GST_RATE = Decimal(0.15)
 
@@ -56,6 +58,63 @@ def dashboard(request):
 
     return render(request, 'dashboard.html', context)
 
+def dashboard_pdf(request):
+    """
+    Generate a PDF version of the dashboard without buttons like 'Add' and 'Update'.
+    """
+    current_financial_year = get_current_financial_year()
+    financial_year, created = FinancialYear.objects.get_or_create(year=current_financial_year)
+
+    # Get personal details
+    personal_details = PersonalDetails.objects.first()
+
+    # Retrieve earnings and expenses for the current financial year
+    earnings = Earning.objects.filter(financial_year=financial_year)
+    expenses = Expense.objects.filter(financial_year=financial_year)
+
+    # Calculate totals
+    total_earnings = earnings.aggregate(total=Sum('amount'))['total'] or Decimal(0)
+    total_expenses = expenses.aggregate(total=Sum('amount'))['total'] or Decimal(0)
+
+    # Calculate adjusted earnings
+    adjusted_earnings = total_earnings - total_expenses
+
+    # Calculate tax owed
+    tax_owed_permanent_income, tax_owed_earnings = financial_year.calculate_tax(adjusted_earnings)
+
+    # Calculate GST if registered
+    gst_to_pay = total_earnings * GST_RATE if personal_details.gst_registered else Decimal(0)
+    earnings_plus_gst = total_earnings + (total_earnings * GST_RATE)
+    gst_to_claim = total_expenses * GST_RATE if personal_details.gst_registered else Decimal(0)
+
+    # Prepare the context
+    context = {
+        'financial_year': financial_year,
+        'earnings': earnings,
+        'expenses': expenses,
+        'personal_details': personal_details,
+        'total_earnings': total_earnings,
+        'total_expenses': total_expenses,
+        'tax_owed_permanent_income': tax_owed_permanent_income,
+        'tax_owed_earnings': tax_owed_earnings,
+        'gst_registered': personal_details.gst_registered,
+        'gst_to_pay': gst_to_pay,
+        'gst_to_claim': gst_to_claim,
+    }
+    template_path = 'dashboard_pdf.html'  # A template without buttons
+
+    # Render the HTML template into PDF
+    template = get_template(template_path)
+    html = template.render(context)
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="dashboard.pdf"'
+
+    # Create PDF from HTML
+    pisa_status = pisa.CreatePDF(html, dest=response)
+
+    if pisa_status.err:
+        return HttpResponse('We had some errors <pre>' + html + '</pre>')
+    return response
 
 def financial_year_detail(request, pk):
     """
