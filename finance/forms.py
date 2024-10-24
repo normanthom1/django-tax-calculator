@@ -31,11 +31,21 @@ class ExpenseForm(forms.ModelForm):
         model = Expense
         fields = ['reference', 'description', 'amount', 'is_good', 'depreciation_rate', 'expense_type', 'attachment', 'purchase_date']
         widgets = {
-            'purchase_date': forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d')  # Use a date input widget for the purchase date field
+            'purchase_date': forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'),  # Use a date input widget for the purchase date field
+            'depreciation_rate': forms.NumberInput(attrs={'min': '0', 'max': '100', 'type': 'number'}),
         }
         initial = {
             'purchase_date': timezone.now  # Set the initial value of purchase_date to the current date
         }
+
+    def clean_depreciation_rate(self):
+        depreciation_rate = self.cleaned_data.get('depreciation_rate')
+        
+        if depreciation_rate is not None:
+            if depreciation_rate < 0 or depreciation_rate > 100:
+                raise forms.ValidationError("Depreciation rate must be between 0 and 100.")
+        
+        return depreciation_rate
 
     def clean(self):
         """

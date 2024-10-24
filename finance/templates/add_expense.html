@@ -1,29 +1,62 @@
 {% extends 'base.html' %}
 
+{% load widget_tweaks %}
+
 {% block content %}
-<h1>Add Expense</h1>
-<form method="POST" enctype="multipart/form-data" id="add-expense-form">
-    {% csrf_token %}
-    
-    {{ form.reference.label_tag }} {{ form.reference }}
-    {{ form.description.label_tag }} {{ form.description }}
-    {{ form.amount.label_tag }} {{ form.amount }}
-    {{ form.is_good.label_tag }} {{ form.is_good }}
+<div class="container mt-4">
+    <h1 class="mb-4">Add Expense</h1>
+    <form method="POST" enctype="multipart/form-data" id="add-expense-form" class="needs-validation" novalidate>
+        {% csrf_token %}
+        
+        <div class="form-group mb-3">
+            {{ form.reference.label_tag }}
+            {{ form.reference|add_class:"form-control" }}
+        </div>
+        
+        <div class="form-group mb-3">
+            {{ form.description.label_tag }}
+            {{ form.description|add_class:"form-control"|attr:"rows:3"}}  <!-- Render as textarea with 3 rows -->
+        </div>
 
-    <div id="depreciation-rate-field" style="display: none;">
-        {{ form.depreciation_rate.label_tag }} {{ form.depreciation_rate }}
-    </div>
+        <div class="form-group mb-3">
+            {{ form.amount.label_tag }}
+            {{ form.amount|add_class:"form-control" }}
+        </div>
 
-    {{ form.expense_type.label_tag }} {{ form.expense_type }}
-    
-    {{ form.attachment.label_tag }} {{ form.attachment }}
+        <div class="form-group form-check mb-3">
+            {{ form.is_good|add_class:"form-check-input" }}
+            {{ form.is_good.label_tag }}
+        </div>
 
-    {{ form.date.label_tag }} {{ form.date }}
+        <div class="form-group mb-3" id="depreciation-rate-field" style="display: none;">
+            {{ form.depreciation_rate.label_tag }}
+            {{ form.depreciation_rate|add_class:"form-control" }}
+        </div>
 
-    {{ form.purchase_date.label_tag }} {{ form.purchase_date }}
+        <div class="form-group mb-3">
+            {{ form.expense_type.label_tag }}
+            {{ form.expense_type|add_class:"form-select" }}
+        </div>
 
-    <button type="submit">Add Expense</button>
-</form>
+        <div class="form-group mb-3">
+            {{ form.attachment.label_tag }}
+            {{ form.attachment|add_class:"form-control-file" }}
+        </div>
+
+        <div class="form-group mb-3">
+            {{ form.date.label_tag }}
+            {{ form.date|add_class:"form-control" }}
+        </div>
+
+        <div class="form-group mb-3">
+            {{ form.purchase_date.label_tag }}
+            {{ form.purchase_date|add_class:"form-control" }}
+        </div>
+
+        <!-- Block-level button -->
+        <button type="submit" class="btn btn-primary w-100">Add Expense</button>
+    </form>
+</div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
