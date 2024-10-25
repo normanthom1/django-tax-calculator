@@ -1,12 +1,56 @@
 {% extends 'base.html' %}
+
+{% load widget_tweaks %}
+
 {% block content %}
-<div class="container">
-    <h1>Update Personal Details</h1>
-    <form method="post">
+<div class="container mt-4">
+    <h1 class="mb-4">Update Personal Details</h1>
+    <form method="post" id="update-personal-details-form" class="needs-validation" novalidate>
         {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-primary">Save Changes</button>
+        
+        <div class="form-group mb-12">
+            {{ form.gst_registered.label_tag }}
+            {{ form.gst_registered|add_class:"form-check-input" }}
+        </div>
+
+        <!-- Row for First Name and Last Name -->
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                {{ form.first_name.label_tag }}
+                {{ form.first_name|add_class:"form-control" }}
+            </div>
+            <div class="col-md-6 mb-3">
+                {{ form.last_name.label_tag }}
+                {{ form.last_name|add_class:"form-control" }}
+            </div>
+        </div>
+
+        <div class="form-group mb-3">
+            {{ form.email.label_tag }}
+            {{ form.email|add_class:"form-control" }}
+        </div>
+
+        <div class="form-group mb-3">
+            {{ form.phone.label_tag }}
+            {{ form.phone|add_class:"form-control" }}
+        </div>
+
+        <div class="form-group mb-3">
+            {{ form.permanent_income.label_tag }}
+            {{ form.permanent_income|add_class:"form-control" }}
+        </div>
+        
+        <div class="container">
+            <div class="row">
+                <div class="col-6">
+                    <a href="{% url 'dashboard' %}" class="btn btn-secondary btn-md btn-block">Back to Dashboard</a>
+                </div>
+                <div class="col-6">
+                    <button type="submit" class="btn btn-primary btn-md btn-block">Save Changes</button>
+                </div>
+            </div>
+        </div>
     </form>
-    <a href="{% url 'dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
 </div>
+<br>
 {% endblock %}
