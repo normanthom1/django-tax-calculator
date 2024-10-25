@@ -52,11 +52,23 @@
             {{ form.purchase_date.label_tag }}
             {{ form.purchase_date|add_class:"form-control" }}
         </div>
+        <br>
 
         <!-- Block-level button -->
-        <button type="submit" class="btn btn-primary w-100">Add Expense</button>
+        <!-- <button type="submit" class="btn btn-success w-100">Add Expense</button> -->
+        <div class="container">
+            <div class="row">
+              <div class="col-6">
+                <a href="{% url 'dashboard' %}" class="btn btn-secondary btn-md btn-block">Cancel</a>
+              </div>
+              <div class="col-6">
+                <button type="submit" class="btn btn-success btn-md btn-block">Add Expense</button>
+              </div>
+            </div>
+        </div>
     </form>
 </div>
+<br>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
