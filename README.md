@@ -48,4 +48,3 @@ Follow these steps to set up the Django Tax Estimator Tool on your local environ
     ```bash
     python manage.py runserver
 
-
