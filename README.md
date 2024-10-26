@@ -33,15 +33,19 @@ Follow these steps to set up the Django Tax Estimator Tool on your local environ
     venv\Scripts\activate     # For Windows
 
 3. **Install Requirements**
-    ```pip install -r requirements.txt
+    ```bash
+    pip install -r requirements.txt
 
 4. **Run Migrations**
-    ```python manage.py migrate
+    ```bash
+    python manage.py migrate
 
 5. **Create a superuser**
-    ```python manage.py createsuperuser
+    ```bash
+    python manage.py createsuperuser
 
 6. **Run the Development Server**
-    ```python manage.py runserver
+    ```bash
+    python manage.py runserver
 
 
